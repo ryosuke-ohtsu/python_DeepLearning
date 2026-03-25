@@ -3,8 +3,13 @@ import os
 import numpy as np
 from PIL import Image
 
-DATASET_DIR = "dataset"
-TRAINER_DIR = "trainer"
+DATASET_DIR = "データセット"
+if not os.path.exists(DATASET_DIR):
+    DATASET_DIR = "dataset"
+
+TRAINER_DIR = "トレーナー"
+if not os.path.exists(TRAINER_DIR):
+    TRAINER_DIR = "trainer"
 os.makedirs(TRAINER_DIR, exist_ok=True)
 
 cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"

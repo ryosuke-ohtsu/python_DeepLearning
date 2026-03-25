@@ -1,7 +1,46 @@
 import cv2
 import os
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
-TRAINER_DIR = "trainer"
+
+def put_text_jp(img, text, org, font_scale=0.7, color=(255,255,255), thickness=2):
+    if text is None or text == "":
+        return
+
+    if all(ord(ch) < 128 for ch in text):
+        cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness, cv2.LINE_AA)
+        return
+
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+    draw = ImageDraw.Draw(pil_img)
+
+    font = None
+    for candidate in [
+        "C:/Windows/Fonts/msgothic.ttc",
+        "C:/Windows/Fonts/meiryo.ttc",
+        "C:/Windows/Fonts/msmincho.ttc",
+        "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
+        "/usr/share/fonts/truetype/ipaexg.ttf"
+    ]:
+        try:
+            font_size = max(12, int(font_scale * 30))
+            font = ImageFont.truetype(candidate, font_size)
+            break
+        except Exception:
+            font = None
+
+    if font is None:
+        font = ImageFont.load_default()
+
+    draw.text(org, text, font=font, fill=(int(color[2]), int(color[1]), int(color[0])))
+    img[:, :, :] = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+
+
+TRAINER_DIR = "トレーナー"
+if not os.path.exists(TRAINER_DIR):
+    TRAINER_DIR = "trainer"
 MODEL_PATH = os.path.join(TRAINER_DIR, "face_trainer.yml")
 LABEL_PATH = os.path.join(TRAINER_DIR, "labels.txt")
 
@@ -69,8 +108,7 @@ while True:
         color = (0, 255, 0) if name != "Unknown" else (0, 0, 255)
 
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-        cv2.putText(frame, text, (x, y-10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+        put_text_jp(frame, text, (x, y-30), font_scale=0.8, color=color, thickness=2)
 
     cv2.imshow("Face Recognition", frame)
 
